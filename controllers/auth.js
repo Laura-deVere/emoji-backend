@@ -6,42 +6,41 @@ const {
 } = require('../utils/auth');
 
 exports.signup = (req, res, next) => {
-    const { name, email, password, password_confirmation } = req.body;
+    let { name, email, password, password_confirmation } = req.body;
     User.findOne({ email: email })
         .then(user => {
             if (user) {
-                return res.status(422).json({ errors: [{ user: "Email already exists" }] });
+                return res.status(422).json({ errors: [{ user: "email already exists" }] });
             } else {
                 const user = new User({
                     name: name,
                     email: email,
-                    password: password
+                    password: password,
+                });
+                bcrypt.genSalt(10, function (err, salt) {
+                    bcrypt.hash(password, salt, function (err, hash) {
+                        if (err) console.log(err);
+                        user.password = hash;
+                        user.save()
+                            .then(response => {
+                                res.status(200).json({
+                                    success: true,
+                                    result: response
+                                })
+                            })
+                            .catch(err => {
+                                res.status(500).json({
+                                    errors: [{ error: err }]
+                                });
+                            });
+                    });
                 });
             }
-
-            bcrypt.genSalt(10, (err, salt) => {
-                bcrypt.hash(password, salt, (err, hash) => {
-                    if (err) throw err;
-                    user.password = hash;
-                    user.save()
-                        .then(response => {
-                            res.status(200).json({
-                                success: true,
-                                result: response
-                            })
-                        })
-                        .catch(err => {
-                            res.status(500).json({
-                                errors: [{ error: err }]
-                            });
-                        })
-                })
-            }).catch(err => {
-                res.status(500).json({
-                    errors: [{ error: 'Oh no! Something went terribly wrong' }]
-                });
+        }).catch(err => {
+            res.status(500).json({
+                errors: [{ error: 'Something went wrong' }]
             });
-        });
+        })
 }
 
 exports.signin = (req, res) => {
