@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
+const xss = require("xss-clean");
 const app = express();
 dotenv.config();
 
@@ -12,7 +13,7 @@ app.use(
     })
 );
 app.use(bodyParser.json());
-
+app.use(xss());
 // DB Config
 const db = process.env.MONGOURI;
 
