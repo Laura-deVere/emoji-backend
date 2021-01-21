@@ -6,14 +6,15 @@ const {
 } = require('../utils/auth');
 
 exports.signup = (req, res, next) => {
-    let { name, email, password, password_confirmation } = req.body;
+    let { fname, lname, email, password, password_confirmation } = req.body;
     User.findOne({ email: email })
         .then(user => {
             if (user) {
                 return res.status(422).json({ errors: [{ user: "email already exists" }] });
             } else {
                 const user = new User({
-                    name: name,
+                    fname: fname,
+                    lname: lname,
                     email: email,
                     password: password,
                 });
