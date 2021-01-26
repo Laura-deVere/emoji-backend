@@ -26,7 +26,7 @@ exports.signup = (req, res, next) => {
                             .then(response => {
                                 res.status(200).json({
                                     success: true,
-                                    result: response
+                                    message: 'Sign up successful.'
                                 })
                             })
                             .catch(err => {
@@ -46,7 +46,6 @@ exports.signup = (req, res, next) => {
 
 exports.signin = (req, res) => {
     const { email, password } = req.body;
-
     User.findOne({ email: email }).then(user => {
         if (!user) {
             return res.status(404).json({
@@ -54,6 +53,7 @@ exports.signin = (req, res) => {
             });
         } else {
             bcrypt.compare(password, user.password).then(isMatch => {
+                console.log(isMatch)
                 if (!isMatch) {
                     return res.status(400).json({ errors: [{ incorrect: 'username or password is incorrect' }] })
                 }
@@ -64,6 +64,13 @@ exports.signin = (req, res) => {
                     3600
                 );
 
+                const currentUser = {
+                    email: user.email,
+                    fname: user.fname,
+                    lname: user.lname,
+                    emojis: user.emojis
+                }
+
                 jwt.verify(access_token, process.env.TOKEN_SECRET, (err, decoded) => {
                     if (err) {
                         res.status(500).json({ errors: err });
@@ -73,13 +80,15 @@ exports.signin = (req, res) => {
                         return res.status(200).json({
                             success: true,
                             token: access_token,
-                            message: user
+                            message: currentUser
                         });
                     }
                 }).catch(err => {
+                    console.log('wrong password')
                     res.status(500).json({ errors: err })
                 });
             }).catch(err => {
+                console.log('something else')
                 res.status(500).json({ errors: err })
             });
         }
